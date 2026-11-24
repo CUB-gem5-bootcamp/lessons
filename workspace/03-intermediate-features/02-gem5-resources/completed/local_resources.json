@@ -1,0 +1,28 @@
+[
+    {
+        "category": "binary",
+        "id": "arm-pattern-print",
+        "description": "A simple ARM binary that prints a pattern",
+        "architecture": "ARM",
+        "size": 1,
+        "tags": [],
+        "is_zipped": false,
+        "md5sum": "93c09562c9eee7cdf781b5fb77f3c138",
+        "source": "",
+        "url": "file://<PATH-TO-PATTERN-EXECUTABLE>",
+        "code_examples": [],
+        "license": "",
+        "author": [
+            "Harshil Patel"
+        ],
+        "source_url": "",
+        "resource_version": "1.0.0",
+        "gem5_versions": [
+            "23.0",
+            "23.1",
+            "24.0",
+            "25.0"
+        ],
+        "example_usage": "obtain_resource(resource_id=\"arm-pattern-print\")"
+    }
+]
