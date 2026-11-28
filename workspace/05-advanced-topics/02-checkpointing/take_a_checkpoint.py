@@ -42,26 +42,34 @@ from gem5.simulate.simulator import (
     Simulator,
 )
 from gem5.utils.requires import requires
+from gem5.simulate.exit_handler import register_exit_handler
+from gem5.components.cachehierarchies.classic.no_cache import NoCache
+from gem5.components.memory.single_channel import SingleChannelDDR4_2400
 import m5
+from pathlib import Path
+from gem5.resources.resource import BinaryResource
 
 requires(
     isa_required=ISA.X86,
-    kvm_required=True,
+    kvm_required=False,
 )
 
 # TODO (1): Set up a simple system configuration.
 
 # Let's set up a NoCache cache hierarchy
-cache_hierarchy = 
+# Note the needed import! (NoCache)
+cache_hierarchy = NoCache()  
 
 # Let's set up a SingleChannelDDR4_2400 memory with 3GiB size
-memory = 
+# Also note the needed import! (SingleChannelDDR4_2400)
+memory = SingleChannelDDR4_2400(size="3GiB") 
 
 # Here we set up a simple processor with the KVM CPU
-processor = 
-
-for proc in processor.get_cores():
-    proc.core.usePerf = False
+processor = SimpleProcessor(
+    cpu_type=CPUTypes.ATOMIC,
+    isa=ISA.X86, # For example
+    num_cores=2,
+)
 
 board = X86Board(
     clk_freq="3GHz",
@@ -70,20 +78,31 @@ board = X86Board(
     cache_hierarchy=cache_hierarchy,
 )
 
-board.set_workload(obtain_resource("npb-ep-a"))
+# Setting up a small workload for us to use, but you can also download a workload
+binary_path = Path("annotated_workload")
+board.set_se_binary_workload(
+    binary = BinaryResource(
+        local_path=binary_path.as_posix()
+    )
+)
 
 # TODO (2): Set up workbegin handler to save a checkpoint and exit
+def workbegin_handler(simulator, payload):
+    print("Done booting Linux")
 
+    print("Take a checkpoint")
+    simulator.save_checkpoint("03-cpt") # This will be the saved checkpoint's directory name
+
+    return True
+
+# Thank you, hypercalls! 
+register_exit_handler(4,workbegin_handler,"hello, checkpointing!")
 
 simulator = Simulator(
     board=board,
-    on_exit_event= {
-        ExitEvent.WORKBEGIN: workbegin_handler(),
-    }
 )
 
 print("Running the simulation")
-print("Using KVM cpu")
 
 simulator.run()
 

@@ -48,22 +48,24 @@ from gem5.simulate.simulator import (
 )
 from gem5.utils.requires import requires
 import m5
+from pathlib import Path
+from gem5.resources.resource import BinaryResource
+
 
 requires(
     isa_required=ISA.X86,
-    kvm_required=True,
 )
 
 
 cache_hierarchy = PrivateL1CacheHierarchy(
-    l1d_size="32kiB",
-    l1i_size="32kiB"
+    l1d_size="32KiB",
+    l1i_size="32KiB"
 )
 
 memory = DualChannelDDR4_2400(size="3GiB")
 
 processor = SimpleProcessor(
-    cpu_type=CPUTypes.TIMING,
+    cpu_type=CPUTypes.TIMING, # Note, not ATOMIC, because we care about timing!
     isa=ISA.X86,
     num_cores=2,
 )
@@ -75,13 +77,19 @@ board = X86Board(
     cache_hierarchy=cache_hierarchy,
 )
 
-board.set_workload(obtain_resource("npb-ep-a"))
+binary_path = Path("annotated_workload")
+
+board.set_se_binary_workload(
+    binary = BinaryResource(
+        local_path = binary_path.as_posix()
+    )
+)
 
 
 simulator = Simulator(
     board=board,
     # TODO (3): Pass in the absolute checkpoint path
-    checkpoint_path = 
+    checkpoint_path = "/homes/iws/elba/learn-you-a-gem5/workspace/05-advanced-topics/02-checkpointing/03-cpt"
 
 )
 
